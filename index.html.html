@@ -1,241 +1,56 @@
 <!DOCTYPE html>
-<html lang="it"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MASON Audit 360°</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-:root{--bg:#0D0E11;--card:#15171c;--line:#2a2d35;--gold:#D4AF37;--tx:#ebe8e0;--mu:#8b8f99}
-body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-.serif{font-family:Georgia,"Times New Roman",serif}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
-.gold{color:var(--gold)}.mu{color:var(--mu)}
-.btn{background:var(--gold);color:#0D0E11;font-weight:600;padding:.7rem 1.4rem;border-radius:10px;transition:.2s;cursor:pointer}
-.btn:hover{filter:brightness(1.12)}
-.btn2{border:1px solid var(--line);padding:.5rem .9rem;border-radius:10px;color:var(--tx);font-size:.85rem;cursor:pointer;transition:.2s}
-.btn2:hover,.btn2.on{border-color:var(--gold);color:var(--gold)}
-input,textarea,select{background:#0f1115;border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;width:100%;color:var(--tx);font-size:.9rem}
-input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
-input[type=range]{padding:0;accent-color:var(--gold);margin:.6rem 0}
-.fade{animation:f .4s ease}@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.fade{animation:none}}
-.bar{height:6px;border-radius:9px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--gold);transition:width .5s}
-.paper{background:#fff;color:#111;border-radius:6px;padding:2rem;font-size:.9rem}
-.paper h2{font-family:Georgia,serif;font-size:1.15rem;margin:1.2rem 0 .3rem;border-bottom:2px solid #D4AF37}
-.paper table{width:100%;border-collapse:collapse;margin:.5rem 0 1rem;font-size:.8rem}
-.paper td,.paper th{border:1px solid #bbb;padding:.35rem .5rem;text-align:left;vertical-align:top}
-.paper th{background:#f3efe0}
-.sig{border-top:1px solid #111;padding-top:.3rem;margin-top:3rem;font-size:.8rem}
-@media print{body{background:#fff}.np{display:none!important}.paper{padding:0}#app{max-width:none;padding:0}}
-</style></head>
-<body><div id="app" class="max-w-5xl mx-auto px-4 py-6"></div>
-<script>
-const CATS=[
-{n:"Food Cost, Menù & Magazzino",s:"Food Cost",a:"Aggiorna le schede tecniche, ricalcola i ricarichi e introduci un controllo settimanale di magazzino e sfridi.",q:[
-"Schede tecniche complete e aggiornate per ogni piatto|2","Food cost reale calcolato e in linea (28-32%)|2","Porzionamento standard con bilance e dosatori|1","Rotazione FIFO ed etichettatura dei prodotti|1","Sfridi e scarti misurati e ridotti|1","Matrice Boston del menù (stelle, cavalli, puzzle, cani) analizzata|1","Ricarichi definiti per categoria di piatto|1","Inventario periodico e scorte minime|1","Fornitori confrontati e condizioni negoziate|1","Menù snello, ingegnerizzato e stagionale|1"]},
-{n:"Flussi di Cassa, Costi Fissi & Break-Even",s:"Cassa & Break-Even",a:"Costruisci budget mensile, calcola il punto di pareggio giornaliero e monitora costi fissi e liquidità ogni settimana.",q:[
-"Incidenza dell’affitto sul fatturato sotto il 10%|2","Bollette e utenze monitorate e ottimizzate|1","Prime Cost (food + personale) sotto il 60%|2","Punto di pareggio giornaliero calcolato|2","Previsione dei flussi di cassa a 90 giorni|1","Budget mensile confrontato con il consuntivo|1","Margine operativo (EBITDA) monitorato|1","Scadenze fiscali e contributive sotto controllo|1","Riserva di liquidità di almeno 2 mesi di costi fissi|1","Contabilità analitica per centro di costo|1"]},
-{n:"Personale, Labor Cost & Turni",s:"Personale",a:"Rivedi i turni sui picchi reali, definisci mansionari e KPI di produttività e struttura onboarding e formazione.",q:[
-"Incidenza del labor cost tra il 30% e il 35%|2","Produttività oraria per dipendente misurata|2","Turnistica flessibile basata sull’affluenza|1","Contratti regolari e CCNL applicato correttamente|1","Onboarding strutturato per i nuovi assunti|1","Formazione continua del team|1","Turnover del personale contenuto|1","Mansionari e procedure scritte|1","Incentivi e premi legati agli obiettivi|1","Briefing di servizio e clima di squadra|1"]},
-{n:"Compliance, HACCP & Sicurezza D.Lgs 81/08",s:"Compliance & HACCP",a:"Aggiorna subito il piano HACCP, i registri e il DVR con un consulente abilitato e programma verifiche periodiche.",q:[
-"HACCP 1 – Analisi dei pericoli|2","HACCP 2 – Individuazione dei punti critici di controllo (CCP)|2","HACCP 3 – Definizione dei limiti critici|2","HACCP 4 – Procedure di monitoraggio|2","HACCP 5 – Azioni correttive|2","HACCP 6 – Procedure di verifica|2","HACCP 7 – Tenuta di registri e documentazione|2","DVR aggiornato e formazione sicurezza del personale|2","Antincendio: estintori, uscite, addetti formati|1","Impianti a norma e manutenzioni documentate|1"]},
-{n:"Marketing, Scontrino Medio & Client Retention",s:"Marketing",a:"Imposta upselling a script, raccogli contatti con consenso GDPR e cura Google Business Profile e prenotazioni dirette.",q:[
-"Upselling in sala con tecniche e script|1","Strategie dedicate ai giorni infrasettimanali|1","Database contatti clienti conforme al GDPR|2","Google Business Profile curato e recensioni gestite|2","Prenotazioni dirette (sito, telefono, WhatsApp)|1","Scontrino medio monitorato e obiettivo definito|2","Contenuti social pianificati|1","Programma fedeltà o di ritorno clienti|1","Redditività di delivery e asporto verificata|1","Promozioni misurate sul ritorno|1"]}];
-const ACT=[[
-"Compila una scheda per ogni piatto con grammature, costo degli ingredienti e resa.",
-"Calcola ogni mese il food cost reale (acquisti su ricavi) e confrontalo con quello teorico.",
-"Introduci bilance e porzioni standard e forma la brigata.",
-"Etichetta con data di apertura e scadenza e applica la regola primo entrato, primo uscito.",
-"Pesa e registra scarti e sfridi per una settimana e intervieni sulle cause principali.",
-"Classifica i piatti per popolarità e margine: promuovi le stelle e rivedi o elimina i cani.",
-"Fissa un coefficiente di ricarico per categoria e verificalo sui piatti più venduti.",
-"Pianifica un inventario mensile e imposta le scorte minime dei prodotti chiave.",
-"Richiedi almeno tre preventivi per le voci principali e rinegozia ogni anno.",
-"Riduci il menù ai piatti che rendono e usa ingredienti in comune."],[
-"Confronta il canone d’affitto con il fatturato e valuta una rinegoziazione.",
-"Confronta i fornitori di energia e installa un controllo dei consumi.",
-"Somma food e personale ogni mese e intervieni se superano il 60% dei ricavi.",
-"Dividi i costi fissi mensili per i giorni di apertura e per lo scontrino medio.",
-"Costruisci un foglio con incassi e pagamenti previsti per i prossimi tre mesi.",
-"Imposta un budget mensile e analizza gli scostamenti ogni mese.",
-"Calcola il margine operativo ogni mese insieme al commercialista.",
-"Crea uno scadenzario con promemoria per imposte e contributi.",
-"Accantona ogni mese una quota fino a coprire due mesi di costi fissi.",
-"Separa i costi per reparto (sala, cucina, delivery) e valuta la redditività di ciascuno."],[
-"Calcola il labor cost sui ricavi e adegua organico o turni per rientrare nel 30-35%.",
-"Misura il ricavo per ora lavorata e fissa un obiettivo per ogni turno.",
-"Costruisci i turni sui dati di affluenza degli ultimi mesi.",
-"Verifica con il consulente del lavoro inquadramenti, orari e CCNL.",
-"Prepara un percorso di inserimento di due settimane con una checklist.",
-"Programma sessioni di formazione trimestrali su servizio, vendita e sicurezza.",
-"Analizza i motivi delle uscite con colloqui e intervieni sulle cause.",
-"Scrivi mansionari e procedure di apertura e chiusura per ogni ruolo.",
-"Introduci premi legati a obiettivi misurabili come scontrino medio e recensioni.",
-"Fai un briefing di dieci minuti prima di ogni servizio."],[
-"Elenca per ogni lavorazione i pericoli biologici, chimici e fisici e valutane il rischio.",
-"Individua i CCP (cottura, abbattimento, conservazione) con il tuo consulente HACCP.",
-"Fissa temperature e tempi limite per ogni CCP e rendili visibili in cucina.",
-"Assegna chi controlla, come e quando, con rilevazioni documentate.",
-"Definisci cosa fare quando un limite viene superato e forma lo staff.",
-"Programma verifiche periodiche del piano e tarature degli strumenti.",
-"Compila e archivia in modo ordinato i registri di temperature, pulizie e formazione.",
-"Aggiorna il DVR con un RSPP e documenta la formazione di tutto il personale.",
-"Controlla estintori, uscite e segnaletica e forma gli addetti antincendio.",
-"Programma manutenzioni e verifiche periodiche di impianti elettrici, gas e cappe."],[
-"Prepara frasi di suggerimento per aperitivi, dolci e vini e allena la sala.",
-"Crea offerte per i giorni deboli, come menù pranzo o serate a tema.",
-"Raccogli contatti con consenso esplicito e informativa e usali per comunicazioni mirate.",
-"Completa la scheda con foto, orari e menù e rispondi a tutte le recensioni.",
-"Attiva un modulo di prenotazione sul sito e un numero WhatsApp dedicato.",
-"Calcola lo scontrino medio ogni settimana e fissa un obiettivo di crescita.",
-"Pianifica due o tre contenuti a settimana con un calendario editoriale.",
-"Offri un incentivo al secondo ritorno, come un omaggio o un invito.",
-"Verifica commissioni e costi di packaging e adegua i prezzi del delivery.",
-"Monitora per ogni promozione incassi, costi e nuovi clienti."]];
-const K="mason_audit_v1",R="mason_reg_v1";
-let S=load(),ch=null;
-function blank(){return{lic:null,prof:{},ans:{},view:"audit",cat:0}}
-function load(){try{return Object.assign(blank(),JSON.parse(localStorage.getItem(K)||"{}"))}catch(e){return blank()}}
-function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
-function reg(){try{return JSON.parse(localStorage.getItem(R)||"{}")}catch(e){return{}}}
-const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const okMail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
-const eur=n=>n.toLocaleString("it-IT")+" €";
-function calc(){
- const cs=CATS.map((c,i)=>{let s=0,w=0,n=0;c.q.forEach((q,j)=>{const a=S.ans[i+"-"+j];if(a&&a.v!=null){const p=+q.split("|")[1];s+=a.v*p;w+=p;n++}});return{avg:w?s/w:0,n}});
- const act=cs.filter(c=>c.n),done=cs.reduce((a,c)=>a+c.n,0);
- const f=act.length?act.reduce((a,c)=>a+c.avg,0)/act.length:0;
- const crit=[];CATS.forEach((c,i)=>c.q.forEach((q,j)=>{const a=S.ans[i+"-"+j];if(a&&a.v!=null&&a.v<=5)crit.push({c:i,j:j,t:q.split("|")[0],v:a.v,n:a.n||""})}));
- crit.sort((x,y)=>x.v-y.v);
- const gap=(10-f)/10,price=done?Math.round((600+3900*Math.pow(gap,1.2)+crit.length*40)/50)*50:0;
- return{cs,done,f,crit,price}}
-const col=v=>v<5?"#e0624d":v<7.5?"#e0a93d":"#6fcf97";
-const lvl=v=>v<5?"Critico":v<7?"Da migliorare":v<8.5?"Solido":"Eccellente";
-const due=v=>v<=2?"Entro 7 giorni":v<=4?"Entro 30 giorni":"Entro 60 giorni";
-function go(v){S.view=v;save();render();scrollTo(0,0)}
-function setErr(m){const e=document.getElementById("err");if(e){e.textContent=m;e.style.display=m?"block":"none"}}
-
-/* ---------- Licenza e antiabuso ---------- */
-function pay(){
- const m=document.getElementById("em").value.trim();
- if(!okMail(m))return setErr("Inserisci un’email valida per procedere al pagamento.");
- if(!confirm("Checkout simulato: pagare 19 € (licenza una tantum)?"))return;
- const r=()=>Math.random().toString(36).slice(2,6).toUpperCase().padEnd(4,"X");
- const code="MASON-"+r()+"-"+r();
- document.getElementById("lc").value=code;activate()}
-function activate(){
- const m=document.getElementById("em").value.trim().toLowerCase(),c=document.getElementById("lc").value.trim().toUpperCase();
- if(!okMail(m))return setErr("Email non valida.");
- if(!/^MASON-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(c))return setErr("Codice licenza non valido. Formato: MASON-XXXX-XXXX.");
- S.lic={email:m,code:c};S.view="audit";save();render()}
-function bind(){
- const r=reg(),k=S.prof.piva,e=S.lic.email,x=r[e];
- if(x&&x.code===S.lic.code&&x.key!==k)return false;
- r[e]={code:S.lic.code,key:k};try{localStorage.setItem(R,JSON.stringify(r))}catch(_){}return true}
-function saveProf(){
- const g=id=>document.getElementById(id).value.trim();
- const p={nome:g("pn"),piva:g("pv"),citta:g("pc"),coperti:parseInt(g("pk"),10),cucina:g("pu")};
- if(!p.nome||!p.citta||!p.cucina)return setErr("Compila nome locale, città e tipologia di cucina.");
- if(!/^\d{11}$/.test(p.piva))return setErr("La Partita IVA deve contenere 11 cifre.");
- if(!(p.coperti>=1&&p.coperti<=2000))return setErr("I coperti devono essere un numero tra 1 e 2000.");
- const old=S.prof;S.prof=p;
- if(!bind()){S.prof=old;return setErr("Licenza già utilizzata: questa email ha già generato il report per un altro ristorante. Per un nuovo locale serve una nuova licenza da 19 €.")}
- S.view="audit";save();render()}
-function newRest(){
- if(!confirm("Un report corrisponde a un solo ristorante. Per un nuovo locale serve una nuova licenza (19 €). I dati attuali verranno rimossi dall’app: esporta prima il backup. Continuare?"))return;
- S=blank();save();render()}
-
-/* ---------- Risposte ---------- */
-function setV(k,v){v=Math.max(0,Math.min(10,parseInt(v,10)));if(isNaN(v))return;(S.ans[k]=S.ans[k]||{}).v=v;save();
- document.getElementById("v"+k).textContent=v;prog()}
-function setN(k,v){(S.ans[k]=S.ans[k]||{}).n=v.slice(0,500);save()}
-function prog(){const d=calc().done,p=document.getElementById("pg"),t=document.getElementById("pt");if(p)p.style.width=d*2+"%";if(t)t.textContent=d+"/50"}
-function cat(i){S.cat=i;save();render();scrollTo(0,0)}
-
-/* ---------- Backup ---------- */
-function exp(){
- const b=new Blob([JSON.stringify({app:"mason-audit",v:1,lic:S.lic,prof:S.prof,ans:S.ans},null,2)],{type:"application/json"});
- const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="mason-audit-"+(S.prof.piva||"backup")+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-function imp(ev){
- const f=ev.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=()=>{try{
-  const d=JSON.parse(r.result);if(d.app!=="mason-audit"||typeof d.ans!=="object"||!d.prof||!d.lic)throw 0;
-  const ans={};for(const k in d.ans){if(!/^[0-4]-[0-9]$/.test(k))continue;const v=d.ans[k]&&d.ans[k].v;
-   ans[k]={v:(typeof v==="number"&&v>=0&&v<=10)?Math.round(v):null,n:String(d.ans[k].n||"").slice(0,500)}}
-  const bk=S;S={lic:d.lic,prof:d.prof,ans,view:"audit",cat:0};
-  if(!okMail(S.lic.email||"")||!/^\d{11}$/.test(S.prof.piva||"")||!bind()){S=bk;throw 0}
-  save();render();alert("Backup importato correttamente.")
- }catch(e){alert("File non valido o licenza già associata a un altro ristorante.")}};
- r.readAsText(f);ev.target.value=""}
-
-/* ---------- Viste ---------- */
-function gate(){return`<div class="min-h-[85vh] flex flex-col justify-center max-w-2xl mx-auto">
-<p class="gold serif text-3xl tracking-widest mb-8">MASON</p>
-<h1 class="serif text-3xl sm:text-5xl leading-tight mb-4">Perché pagare un consulente 2.000€ quando puoi fare l’autodiagnosi completa a 19€?</h1>
-<p class="mu mb-8">50 parametri in 5 aree, dashboard in tempo reale, criticità prioritarie e report executive da stampare. Licenza una tantum, un report per ristorante.</p>
-<div class="card p-5 space-y-3">
-<input id="em" type="email" placeholder="La tua email" autocomplete="email">
-<input id="lc" placeholder="Codice licenza (MASON-XXXX-XXXX)">
-<div id="err" role="alert" style="display:none;color:#e0624d;font-size:.85rem"></div>
-<div class="flex flex-wrap gap-3"><button class="btn" onclick="pay()">Acquista a 19 €</button><button class="btn2" onclick="activate()">Attiva codice</button></div>
-<p class="mu text-xs">Pagamento simulato in questa versione: collega Stripe Checkout sul tuo server per l’emissione reale dei codici.</p></div></div>`}
-function prof(){const p=S.prof;return`<div class="max-w-2xl mx-auto"><p class="gold serif text-2xl tracking-widest mb-6">MASON</p>
-<h1 class="serif text-3xl mb-2">Dati del ristorante</h1><p class="mu mb-6">Questi dati compaiono nel report e vincolano la licenza a un solo locale.</p>
-<div class="card p-5 grid sm:grid-cols-2 gap-3">
-<input id="pn" placeholder="Nome del locale" value="${esc(p.nome)}"><input id="pv" placeholder="Partita IVA (11 cifre)" inputmode="numeric" maxlength="11" value="${esc(p.piva)}">
-<input id="pc" placeholder="Città" value="${esc(p.citta)}"><input id="pk" type="number" min="1" max="2000" placeholder="Coperti" value="${esc(p.coperti)}">
-<input class="sm:col-span-2" id="pu" placeholder="Tipologia di cucina" value="${esc(p.cucina)}">
-<div id="err" role="alert" class="sm:col-span-2" style="display:none;color:#e0624d;font-size:.85rem"></div>
-<button class="btn sm:col-span-2" onclick="saveProf()">Salva e inizia l’audit</button></div></div>`}
-function nav(){const d=calc().done;
- const t=[["audit","Audit"],["dash","Dashboard"],["rep","Report"]].map(x=>`<button class="btn2 ${S.view===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]}</button>`).join("");
- return`<header class="np mb-6"><div class="flex flex-wrap items-center justify-between gap-3 mb-3"><p class="gold serif text-2xl tracking-widest">MASON <span class="mu text-sm">Audit 360°</span></p>
-<div class="flex flex-wrap gap-2">${t}<button class="btn2" onclick="exp()">Esporta</button><label class="btn2">Importa<input type="file" accept=".json,application/json" class="hidden" onchange="imp(event)"></label><button class="btn2" onclick="go('prof')">Dati locale</button><button class="btn2" onclick="newRest()">Nuovo ristorante</button></div></div>
-<div class="flex items-center gap-3"><div class="bar flex-1"><i id="pg" style="width:${d*2}%"></i></div><span class="mu text-xs" id="pt">${d}/50</span></div></header>`}
-function audit(){const i=S.cat||0,c=CATS[i];
- const tabs=CATS.map((x,n)=>`<button class="btn2 ${n===i?"on":""}" onclick="cat(${n})">${n+1}. ${x.s}</button>`).join("");
- const qs=c.q.map((q,j)=>{const k=i+"-"+j,a=S.ans[k]||{},v=a.v;
-  return`<div class="card p-4"><div class="flex justify-between gap-3"><p class="text-sm">${j+1}. ${q.split("|")[0]}</p><b class="gold text-lg" id="v${k}">${v==null?"–":v}</b></div>
-<input type="range" min="0" max="10" step="1" value="${v==null?0:v}" aria-label="Voto da 0 a 10" oninput="setV('${k}',this.value)" onchange="setV('${k}',this.value)">
-<textarea rows="1" maxlength="500" placeholder="Note (opzionale)" onchange="setN('${k}',this.value)">${esc(a.n)}</textarea></div>`}).join("");
- return`<div class="flex flex-wrap gap-2 mb-5">${tabs}</div><h2 class="serif text-2xl mb-4">${c.n}</h2><div class="grid md:grid-cols-2 gap-3">${qs}</div>
-<div class="flex justify-between mt-6"><button class="btn2" ${i?"":"disabled style='opacity:.3'"} onclick="cat(${i-1})">Indietro</button>
-${i<4?`<button class="btn" onclick="cat(${i+1})">Area successiva</button>`:`<button class="btn" onclick="go('dash')">Vedi la dashboard</button>`}</div>`}
-function gauge(f){const L=282.7;return`<svg viewBox="0 0 200 115" class="w-full max-w-xs mx-auto"><path d="M10 100A90 90 0 0 1 190 100" fill="none" stroke="#2a2d35" stroke-width="14" stroke-linecap="round"/>
-<path d="M10 100A90 90 0 0 1 190 100" fill="none" stroke="${col(f)}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${f/10*L} ${L}" style="transition:stroke-dasharray .8s"/>
-<text x="100" y="92" text-anchor="middle" fill="#ebe8e0" font-size="34" font-family="Georgia,serif">${f.toFixed(1)}</text><text x="100" y="110" text-anchor="middle" fill="#8b8f99" font-size="10">su 10 · ${lvl(f)}</text></svg>`}
-function dash(){const d=calc();
- if(!d.done)return`<div class="card p-8 text-center"><p class="mb-4">Nessun dato ancora. Rispondi ad alcuni parametri per vedere l’analisi.</p><button class="btn" onclick="go('audit')">Inizia l’audit</button></div>`;
- const cards=d.cs.map((x,i)=>`<div class="card p-4"><div class="flex justify-between text-sm mb-2"><span>${CATS[i].s}</span><b style="color:${col(x.avg)}">${x.n?x.avg.toFixed(1):"–"}</b></div><div class="bar"><i style="width:${x.avg*10}%;background:${col(x.avg)}"></i></div><p class="mu text-xs mt-2">${x.n}/10 parametri valutati</p></div>`).join("");
- const cr=d.crit.length?d.crit.map(x=>`<li class="card p-3"><div class="flex justify-between gap-3"><b class="text-sm">${x.t}</b><span style="color:${col(x.v)}">${x.v}/10</span></div><p class="mu text-xs mt-1">${CATS[x.c].s} · ${due(x.v)}</p><p class="text-sm mt-1">${ACT[x.c][x.j]}</p></li>`).join(""):`<li class="mu">Nessun parametro con voto pari o inferiore a 5.</li>`;
- return`<div class="grid md:grid-cols-2 gap-4"><div class="card p-5"><h3 class="serif text-xl mb-2 text-center">Media finale</h3>${gauge(d.f)}</div>
-<div class="card p-5"><h3 class="serif text-xl mb-2 text-center">Bilanciamento delle 5 aree</h3><canvas id="rc" height="230"></canvas></div></div>
-<div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-4">${cards}</div>
-<div class="card p-5 mt-4"><h3 class="serif text-xl mb-1">Preventivo di consulenza stimato</h3>
-<p class="mu text-sm mb-3">Più la gestione è disordinata, più lavoro serve per riportarla in equilibrio.</p>
-<div class="flex flex-wrap gap-6 items-end"><div><p class="mu text-xs">Consulente esterno</p><p class="serif text-4xl gold">${eur(d.price)}</p></div><div><p class="mu text-xs">Audit in autonomia</p><p class="serif text-2xl">19 €</p></div><div><p class="mu text-xs">Risparmio reale</p><p class="serif text-2xl" style="color:#6fcf97">${eur(d.price-19)}</p></div></div></div>
-<h3 class="serif text-xl mt-6 mb-3">Criticità prioritarie (${d.crit.length})</h3><ul class="grid md:grid-cols-2 gap-3">${cr}</ul>`}
-function rep(){const d=calc(),p=S.prof,dt=new Date().toLocaleDateString("it-IT");
- const crit=d.crit.map((x,n)=>`<tr><td>${n+1}</td><td>${CATS[x.c].s}</td><td>${x.t}${x.n?"<br><i>"+esc(x.n)+"</i>":""}</td><td>${x.v}</td><td>${due(x.v)}</td></tr>`).join("")||`<tr><td colspan="5">Nessuna criticità rilevata.</td></tr>`;
- const plan=d.crit.map(x=>`<tr><td>${x.t}</td><td>${ACT[x.c][x.j]}</td><td></td><td>${due(x.v)}</td><td></td></tr>`).join("")||`<tr><td colspan="5">Mantenere i controlli periodici.</td></tr>`;
- const sum=d.cs.map((x,i)=>`<tr><td>${CATS[i].n}</td><td>${x.n?x.avg.toFixed(1):"–"}</td><td>${x.n}/10</td><td>${x.n?lvl(x.avg):"–"}</td></tr>`).join("");
- return`<div class="np flex gap-3 mb-4"><button class="btn" onclick="print()">Stampa / Salva PDF</button></div>
-<article class="paper"><p class="serif" style="letter-spacing:.3em;color:#8a6d12">MASON</p><h1 class="serif" style="font-size:1.8rem">Manuale di autocontrollo – Executive Summary</h1><p>Data del report: ${dt}</p>
-<h2>Dati del locale</h2><table><tr><th>Locale</th><td>${esc(p.nome)}</td><th>Partita IVA</th><td>${esc(p.piva)}</td></tr><tr><th>Città</th><td>${esc(p.citta)}</td><th>Coperti</th><td>${esc(p.coperti)}</td></tr><tr><th>Cucina</th><td colspan="3">${esc(p.cucina)}</td></tr></table>
-<h2>Risultato complessivo: ${d.f.toFixed(1)}/10 (${lvl(d.f)})</h2><table><tr><th>Area</th><th>Media</th><th>Valutati</th><th>Livello</th></tr>${sum}</table>
-<div style="max-width:380px;margin:auto"><canvas id="rr" height="260"></canvas></div>
-<h2>Criticità prioritarie (voto ≤ 5)</h2><table><tr><th>#</th><th>Area</th><th>Parametro e note</th><th>Voto</th><th>Scadenza</th></tr>${crit}</table>
-<h2>Piano d’azione operativo</h2><table><tr><th>Parametro</th><th>Azione correttiva</th><th>Responsabile</th><th>Scadenza</th><th>Completato</th></tr>${plan}</table>
-<p>Costo stimato di una consulenza equivalente: <b>${eur(d.price)}</b>. Costo dell’audit in autonomia: <b>19 €</b>.</p>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem"><div class="sig">Firma del titolare</div><div class="sig">Firma del responsabile / consulente</div></div>
-<p style="font-size:.7rem;color:#666;margin-top:1.5rem">Documento di autodiagnosi gestionale: non sostituisce consulenze professionali in materia fiscale, legale, HACCP e sicurezza sul lavoro.</p></article>`}
-function radar(id,dark){const el=document.getElementById(id);if(!el)return;const d=calc(),c=dark?"#D4AF37":"#8a6d12",g=dark?"#2a2d35":"#ccc",t=dark?"#8b8f99":"#333";
- ch=new Chart(el,{type:"radar",data:{labels:CATS.map(x=>x.s),datasets:[{data:d.cs.map(x=>+x.avg.toFixed(2)),borderColor:c,backgroundColor:c+"33",pointBackgroundColor:c}]},
- options:{animation:dark?{}:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:10,ticks:{stepSize:2,backdropColor:"transparent",color:t},grid:{color:g},angleLines:{color:g},pointLabels:{color:t,font:{size:11}}}}}})}
-function render(){
- const a=document.getElementById("app");if(ch){ch.destroy();ch=null}
- let h;if(!S.lic)h=gate();else if(S.view==="prof"||!S.prof.nome)h=prof();else h=nav()+({audit,dash,rep}[S.view]||audit)();
- a.innerHTML=`<div class="fade">${h}</div>`;
- if(S.lic&&S.prof.nome){if(S.view==="dash")radar("rc",true);if(S.view==="rep")radar("rr",false)}}
-render();
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASON Audit 360° | Autodiagnosi Ristorativa di Precisione</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            DEFAULT: '#D4AF37',
+                            light: '#F3E5AB',
+                            dark: '#AA7C11'
+                        },
+                        slate: {
+                            950: '#0D0E11',
+                            900: '#14161C',
+                            800: '#1F232D',
+                            700: '#2D3342'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gold-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #AA7C11 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-btn {
+            background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+        }
+        .gold-btn:hover {
+            background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            .bg-slate-900, .bg-slate-950, .bg-slate-800 { background: white !important; color: black !important; border-color: #ccc !important; }
+            .text-white, .text-slate-300, .text-slate-400 { color: black !important; }
+            .gold-gradient { background
 </script></body></html>
